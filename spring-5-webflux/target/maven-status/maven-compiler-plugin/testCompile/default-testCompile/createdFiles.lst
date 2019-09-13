@@ -1,0 +1,5 @@
+com\baeldung\spring\responsestatus\ResponseStatusControllerLiveTest.class
+com\baeldung\spring\serverconfig\GreetingLiveTest.class
+com\baeldung\spring\serverconfig\GreetingSkipAutoConfigLiveTest.class
+com\baeldung\spring\serverconfig\GreetingControllerIntegrationTest.class
+com\baeldung\spring\webclientrequests\WebClientRequestsUnitTest.class

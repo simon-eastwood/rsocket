@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.baeldung.spring.responsestatus.ResponseStatusControllerLiveTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.295 sec

@@ -1,0 +1,1 @@
+C:\portable\apache-maven-3.6.1\bin\mvn spring-boot:run -Dstart-class=com.baeldung.spring.rsocket.client.ClientApplication
