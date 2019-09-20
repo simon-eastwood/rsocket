@@ -46,6 +46,10 @@ import java.util.Collections;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 @Controller
 class TestController {
 	@Value(value = "${message.topic.name}")  
@@ -64,7 +68,7 @@ class TestController {
 
 	}
 
-	// Stream
+
 	
 
 }
@@ -72,6 +76,14 @@ class TestController {
 class Globals {
 
 	public static long lastOffset = 0;
+}
+
+class MessageToBrowser {
+	private String msg;
+
+	MessageToBrowser(String m) {
+		this.msg = m;
+	}
 }
 
 /* @Configuration
@@ -154,7 +166,7 @@ class RealTimeUIController {
 	
 
 	@MessageMapping("getEvents")
-	public Flux<RTMessage> streamEvents(String payload, RSocketRequester requester) {
+	public Flux<RTMessage> streamEvents(RTMessage payload, RSocketRequester requester) {
 		System.out.println("get Events invoked");
 		 this.connectedClients.offer(requester);
 
@@ -162,7 +174,7 @@ class RealTimeUIController {
 		 Subscription sub;
 
 		 /* if (this.subscriptions.size() < 1) { */
-			sub = new Subscription (payload, payload, payload);
+			sub = new Subscription (payload);
 			this.subscriptions.offer(sub);  // TODO only add it if it doesnt already exist
 	/* 	 } else {
 			sub = this.subscriptions.peek();
@@ -188,9 +200,28 @@ class RealTimeUIController {
 		 */
 		//return Flux.just(new RTMessage("type","id","etag"));
 		Flux<RTMessage>  f = sub.getFilteredStream();
-		f.subscribe(d -> System.out.println("Subscriber 1 "));
+		f.doOnTerminate(() -> {
+		
+			this.connectedClients.remove(requester);
+			this.subscriptions.remove(sub);
+		})
+		.doOnCancel(() -> {
+			
+			this.connectedClients.remove(requester);
+			this.subscriptions.remove(sub);
+		});;
 		return f;
 	}
+
+	@GetMapping("/outage")
+	@ResponseBody
+	public Mono<String> sendMessageToClients() {
+		return 	Flux.fromIterable(this.connectedClients)
+								.flatMap(requester -> requester.route("outage").data("").send() )
+									.then(Mono.just("Sent to clients "));
+	}
+
+
 }
 
  

@@ -10,7 +10,7 @@ window.onload = function init() {
         // attached controller to offset form
         const offsetForm = document.getElementById('offsetForm');
         offsetForm.onsubmit = (f) => {
-            console.log("submit done"); client.getOffset(
+            client.getOffset(
                 (data) => { document.getElementById('latestOffset').innerHTML = JSON.stringify(data); }
             ); return false;
         };
@@ -18,7 +18,7 @@ window.onload = function init() {
         // attache controller to send form
         const sendForm = document.getElementById('sendForm');
         sendForm.onsubmit = (f) => {
-            console.log("send done"); client.send(
+            client.send(
                 f.srcElement.elements['TypeToSend'].value,
                 f.srcElement.elements['IdToSend'].value,
                 f.srcElement.elements['eTagToSend'].value
@@ -28,7 +28,7 @@ window.onload = function init() {
         // attach controller to request stream form
         const streamForm = document.getElementById('streamForm');
         streamForm.onsubmit = (f) => {
-            console.log("send done"); client.reqStream(
+            client.reqStream(
                 f.srcElement.elements['TypeToSend'].value,
                 f.srcElement.elements['IdToSend'].value,
                 f.srcElement.elements['eTagToSend'].value,

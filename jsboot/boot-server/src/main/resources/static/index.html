@@ -97,25 +97,26 @@
         <div id="stream" class="flex-col panel">
             <form id="streamForm">
                 <div class="input flex-row">
-                    <div class="label">Type</div><input id="TypeToSend" value="MyType"></input>
+                    <div class="label">Type</div><input id="TypeToSend" value=".*"></input>
                 </div>
                 <div class="input flex-row">
-                    <div class="label">Id</div><input id="IdToSend" value="MyId"></input>
+                    <div class="label">Id</div><input id="IdToSend" value=".*"></input>
                 </div>
                 <div class="input flex-row">
-                    <div class="label">etag</div><input id="eTagToSend" value="MyeTag"></input>
+                    <div class="label">etag</div><input id="eTagToSend" value=".*"></input>
                 </div>
                 <input type="submit" value="Request Stream"></input>
             </form>
             <div class="messageList">
                 <div class="messages">
                     <ul  id="messagelist">
-                        <li>example1</li>
+                        
                     </ul>
                 </div>
             </div>
         </div>
 
+        
     </div>
 
     <script src="/main.js" async=""></script>

@@ -4,24 +4,26 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.FluxSink;
 
+import java.util.regex.Pattern;
+
 public class Subscription {
-	private String type;
-	private String id;
-	private String etag;
+
+	private Pattern typeRE;
+	private Pattern idRE;
+	private Pattern etagRE;
 
 	private Flux  filteredStream;
-
 	private EmitterProcessor<RTMessage> emitterProcessor;
 	private FluxSink<RTMessage> sink;
 
-	public Subscription (String type, String id, String eTag) {
-		this.type = type;
-		this.id = id;
-		this.etag = eTag;
+	public Subscription (RTMessage filter) {
+		this.typeRE = Pattern.compile (filter.getType()); 
+		this.idRE = Pattern.compile (filter.getId());  
+		this.etagRE =  Pattern.compile (filter.getEtag());  
 
 		this.emitterProcessor = EmitterProcessor.create();
 		this.sink = emitterProcessor.sink(); 
-		this.filteredStream = this.emitterProcessor.publish().autoConnect();
+		this.filteredStream = this.emitterProcessor.publish().autoConnect();  // TODO: detect when the last subscriber has disconnected
 
 	}
 
@@ -30,32 +32,16 @@ public class Subscription {
 	}
 
 	public void filterEvent (RTMessage msg) {
-		System.out.println ("Appending msg to stream"+ msg.getType());
-		this.sink.next(msg);
+
+		// check if it matches my filter
+		if (this.typeRE.matcher(msg.getType()).matches() &&
+				this.idRE.matcher(msg.getId()).matches() &&
+					this.etagRE.matcher(msg.getEtag()).matches() ) {
+			
+			System.out.println ("Appending msg to stream"+ msg.getType());
+			this.sink.next(msg);
+		}
 	}
 
-	public String getType() {
-		return this.type;
-	}
-
-	public String getId() {
-		return this.id;
-	}
-	
-	public String getEtag() {
-		return this.etag;
-	}
-
-	public void setType (String type) {
-		this.type = type;
-	}
-
-	public void setId (String id) {
-		this.id = id;
-	}
-
-	public void setEtag (String etag) {
-		this.etag = etag;
-	}
 
 }

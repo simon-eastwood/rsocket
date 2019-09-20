@@ -17,6 +17,21 @@ const CustomEncoders = {
     resumeToken: UTF8Encoder,
 };
 
+class IncomingHandler {
+
+    constructor() {
+        
+    }
+
+    fireAndForget(payload) {
+       
+            
+       console.log ("outage function called");
+       document.body.style.backgroundColor = "red";
+    }
+    
+}
+
 export class TestClient {
 
     constructor(url) {
@@ -33,7 +48,8 @@ export class TestClient {
                 dataMimeType: 'application/json',
                 metadataMimeType: RoutingMetadataSerializer.MIME_TYPE,
             },
-            transport: new RSocketWebSocketClient({url: url}, CustomEncoders)
+            transport: new RSocketWebSocketClient({url: url}, CustomEncoders),
+            responder: new IncomingHandler()
         });
     }
 
@@ -41,10 +57,6 @@ export class TestClient {
         return this.client.connect().subscribe({
             onComplete: s => {
                 this.socket = s;
-        
-                
-       
-  
                 cb();
             },
             onError: error => console.error(error),
@@ -57,7 +69,7 @@ export class TestClient {
     }
 
     getOffset(cb) {
-        console.log ("getoffset called");
+        
         this.socket.requestResponse({
             data: {},
             metadata: 'getCurrentOffset',
@@ -69,17 +81,18 @@ export class TestClient {
     }
 
     send(t, i, e) {
-        console.log (t);
         this.socket.fireAndForget({
             data: {type: t, id: i, etag: e},
             metadata: 'test',
         });
     }
 
-    reqStream(type, id, etag, cb) {
-        console.log('requesting server response');
+    reqStream(t, i, e, cb) {
+    
+            var subscriber;
+        
             this.socket.requestStream({
-                    data: 'input string',
+                    data: {type: t, id: i, etag: e},
                      metadata: 'getEvents'
                 }).subscribe({
                     onError: error => {
@@ -87,20 +100,16 @@ export class TestClient {
                         console.dir(error);
                     },
                     onNext: msg => {
-                        const data = msg.data;
-                        console.log ("stream provided next value");
-                        console.log (data);
-                        cb(data);
-                       
+                        cb(msg.data);     
+                        this.subscriber.request(1);
                     },
                     onSubscribe: sub => {
-                        console.log ("subscribed Now setting up backpressure control ");
-                        console.log (sub);
-                        
-                        window.setInterval(() => {
+                        this.subscriber = sub;
+                        sub.request(1);
+/*                          window.setInterval(() => {
                             console.log ("requesting next 10 ");
                             sub.request(10);
-                        }, 1000);
+                        }, 1000);  */
                     },
 
                 });          
