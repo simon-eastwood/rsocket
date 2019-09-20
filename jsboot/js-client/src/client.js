@@ -41,8 +41,44 @@ export class TestClient {
         return this.client.connect().subscribe({
             onComplete: s => {
                 this.socket = s;
-                console.log('requesting server response');
-                s.requestStream({
+        
+                
+       
+  
+                cb();
+            },
+            onError: error => console.error(error),
+            onSubscribe: cancel => { this.cancel = cancel}
+        });
+    }
+
+    disconnect() {
+        this.cancel();
+    }
+
+    getOffset(cb) {
+        console.log ("getoffset called");
+        this.socket.requestResponse({
+            data: {},
+            metadata: 'getCurrentOffset',
+        }).subscribe({
+            onComplete: p => {console.log('received: ' + JSON.stringify(p)); cb(p);},
+            onError: error => {console.error(error); cb(error);},
+            onSubscribe: data => console.log('subscribed: ' + data)
+        });   
+    }
+
+    send(t, i, e) {
+        console.log (t);
+        this.socket.fireAndForget({
+            data: {type: t, id: i, etag: e},
+            metadata: 'test',
+        });
+    }
+
+    reqStream(type, id, etag, cb) {
+        console.log('requesting server response');
+            this.socket.requestStream({
                     data: 'input string',
                      metadata: 'getEvents'
                 }).subscribe({
@@ -54,11 +90,13 @@ export class TestClient {
                         const data = msg.data;
                         console.log ("stream provided next value");
                         console.log (data);
+                        cb(data);
                        
                     },
                     onSubscribe: sub => {
                         console.log ("subscribed Now setting up backpressure control ");
                         console.log (sub);
+                        
                         window.setInterval(() => {
                             console.log ("requesting next 10 ");
                             sub.request(10);
@@ -66,28 +104,6 @@ export class TestClient {
                     },
 
                 });          
-                s.requestResponse({
-                    data: {},
-                    metadata: 'getCurrentOffset',
-                }).subscribe({
-                    onComplete: p => console.log('received: ' + JSON.stringify(p)),
-                    onError: error => console.error(error),
-                    onSubscribe: data => console.log('subscribed: ' + data)
-                });     
-                s.fireAndForget({
-                    data: {type: "MyType", id: "MyId", etag:"MyETag"},
-                    metadata: 'test',
-                });
-  
-                cb();
-            },
-            onError: error => console.error(error),
-            onSubscribe: cancel => { this.cancel = cancel}
-        });
-    }
-
-    disconnect() {
-        this.cancel();
     }
 
 }

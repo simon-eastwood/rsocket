@@ -1,22 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Flight Tracker</title>
-    <script src="/main.js" async=""></script>
+    <title>RSocket-Kafka Demo</title>
+
+    <style>
+        * {
+            margin: 2px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font: 13px Helvetica, Arial;
+        }
+
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .panel {
+            background: lightgray;
+            padding: 10px;
+            width: 100%;
+            border-style: solid;
+            border-width: 1px;
+        }
+
+        .messages {
+            display: flex;
+            height: 600px;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: 40px;
+            overflow: auto;
+        }
+
+        .messageList {
+            background: lightgray;
+            padding: 10px;
+            flex-direction: column;
+            width: 100%;
+            height: -webkit-fill-available;
+            border-style: solid;
+            border-width: 1px;
+
+        }
+
+        .messageList ul {
+            list-style-type: none;
+            justify-content: unset;
+        }
+
+        .messageList li:nth-child(odd) {
+            background: #eee;
+        }
+    </style>
 </head>
+
 <body>
-<div id="map" style="min-height:800px;height:100%;width:100%;position:relative;"></div>
-<div>Icons made by <a href="https://www.flaticon.com/authors/twitter" title="Twitter">Twitter</a>
-    and <a href="https://www.freepik.com/" title="Freepik">Freepik</a>
-    from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-    is licensed by
-    <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0"
-       target="_blank">CC 3.0 BY</a>
-    <!--
-        https://www.flaticon.com/free-icon/airplane-shape_59919
-        https://www.flaticon.com/free-icon/satellite-dish_1025167
-    -->
-</div>
+    <div id="main" class="flex-row">
+        <div id="offset" class="flex-col panel">
+            <span id="latestOffset">?</span>
+            <form id="offsetForm">
+            <div class="input flex-row">
+                <input type="submit" value="Get Latest Offset"></input>
+            </div>
+            </form>
+            </form>
+        </div>
+        <div id="send" class="flex-col panel">
+            <form id="sendForm">
+                <div class="input flex-row">
+                    <div class="label">Type</div><input id="TypeToSend" value="MyType"></input>
+                </div>
+                <div class="input flex-row">
+                    <div class="label">Id</div><input id="IdToSend" value="MyId"></input>
+                </div>
+                <div class="input flex-row">
+                    <div class="label">etag</div><input id="eTagToSend" value="MyeTag"></input>
+                </div>
+                <input type="submit" value="Send"></input>
+
+            </form>
+        </div>
+
+        <div id="stream" class="flex-col panel">
+            <form id="streamForm">
+                <div class="input flex-row">
+                    <div class="label">Type</div><input id="TypeToSend" value="MyType"></input>
+                </div>
+                <div class="input flex-row">
+                    <div class="label">Id</div><input id="IdToSend" value="MyId"></input>
+                </div>
+                <div class="input flex-row">
+                    <div class="label">etag</div><input id="eTagToSend" value="MyeTag"></input>
+                </div>
+                <input type="submit" value="Request Stream"></input>
+            </form>
+            <div class="messageList">
+                <div class="messages">
+                    <ul  id="messagelist">
+                        <li>example1</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/main.js" async=""></script>
 </body>
+
 </html>

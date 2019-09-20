@@ -74,6 +74,40 @@ class Globals {
 	public static long lastOffset = 0;
 }
 
+/* @Configuration
+public class MyConfiguration {
+	@Value(value = "${message.topic.name}")
+	private String topicName;
+
+	@Value(value = "${kafka.bootstrapAddress}")
+	private String bootstrapAddress;
+
+	@Value(value = "${spring.kafka.consumer.group-id}")
+	private String consumerGroupId;
+
+    @Bean
+    public KafkaReceiver<String, String> kafkaReceiver() {
+        Map<String, Object> props = new HashMap<>();
+		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
+		consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        final ReceiverOptions<String, String> receiverOptions =
+                ReceiverOptions.<String, string>create(props)
+                               .subscription(Collections.singleton(consumer.getTopic()));
+        return KafkaReceiver.create(receiverOptions);
+    } 
+} */
+
+/* @Bean
+public ApplicationRunner runner(KafkaReceiver<String, String> kafkaReceiver) {
+        return args -> {
+                kafkaReceiver.receive()
+                          ...
+                          .sunbscribe();
+        };
+} */
+
 
 @Controller
 class RealTimeUIController {
@@ -113,7 +147,9 @@ class RealTimeUIController {
 		
 		Globals.lastOffset = cr.offset();
 		System.out.println("Offset is " + Globals.lastOffset);
-		System.out.println("Content is " + cr.value());
+		System.out.println("Content is " + msg);
+
+		this.subscriptions.forEach(s -> s.filterEvent(msg));
 	} 
 	
 
@@ -122,30 +158,38 @@ class RealTimeUIController {
 		System.out.println("get Events invoked");
 		 this.connectedClients.offer(requester);
 
-		 Subscription sub = new Subscription (payload, payload, payload);
-		 this.subscriptions.offer(sub);  // TODO only add it if it doesnt already exist
+		
+		 Subscription sub;
+
+		 /* if (this.subscriptions.size() < 1) { */
+			sub = new Subscription (payload, payload, payload);
+			this.subscriptions.offer(sub);  // TODO only add it if it doesnt already exist
+	/* 	 } else {
+			sub = this.subscriptions.peek();
+		 } */
 
 		
 
-/* 		Map<String, Object> consumerProps = new HashMap<>();
-		consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-		consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
-		consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
-		consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+ 	/* 	Map<String, Object> consumerProps = new HashMap<>();
+
 
 	ReceiverOptions<Integer, String> receiverOptions =
     ReceiverOptions.<Integer, String>create(consumerProps)         
 				   .subscription(Collections.singleton(topicName));
 				   
 
-				   Flux<ReceiverRecord<Integer, String>> inboundFlux =
+				   Flux<ReceiverRecord<RTMessage>> inboundFlux =
     KafkaReceiver.create(receiverOptions)
                  .receive(); 
+ */
 
-
-		return inboundFlux.doOnEach(v -> System.err.println("got value from kafka") ).doOnNext( r -> r.receiverOffset().acknowledge() )
-		.map(ReceiverRecord::value);  */
-		return sub.getFilteredStream();
+		/* return inboundFlux.doOnEach(v -> System.err.println("got value from kafka") ).doOnNext( r -> r.receiverOffset().acknowledge() )
+		.map(ReceiverRecord::value);  
+		 */
+		//return Flux.just(new RTMessage("type","id","etag"));
+		Flux<RTMessage>  f = sub.getFilteredStream();
+		f.subscribe(d -> System.out.println("Subscriber 1 "));
+		return f;
 	}
 }
 

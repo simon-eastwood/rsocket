@@ -1,6 +1,8 @@
 package org.epo.internal.server;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.EmitterProcessor;
+import reactor.core.publisher.FluxSink;
 
 public class Subscription {
 	private String type;
@@ -9,12 +11,17 @@ public class Subscription {
 
 	private Flux  filteredStream;
 
+	private EmitterProcessor<RTMessage> emitterProcessor;
+	private FluxSink<RTMessage> sink;
+
 	public Subscription (String type, String id, String eTag) {
 		this.type = type;
 		this.id = id;
 		this.etag = eTag;
 
-		this.filteredStream = Flux.empty();
+		this.emitterProcessor = EmitterProcessor.create();
+		this.sink = emitterProcessor.sink(); 
+		this.filteredStream = this.emitterProcessor.publish().autoConnect();
 
 	}
 
@@ -23,7 +30,8 @@ public class Subscription {
 	}
 
 	public void filterEvent (RTMessage msg) {
-		Flux.concat(this.filteredStream, Flux.just(msg));
+		System.out.println ("Appending msg to stream"+ msg.getType());
+		this.sink.next(msg);
 	}
 
 	public String getType() {
